@@ -21,9 +21,6 @@ in
         pkgs.statix
         pkgs.deadnix
         pkgs.nil
-
-        # Cloudflare
-        pkgs.nodePackages.wrangler
       ];
 
       shellHook = ''

@@ -1,0 +1,61 @@
+name: test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+jobs:
+  check:
+    name: nix-flake-check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: DeterminateSystems/determinate-nix-action@v3
+
+      - uses: DeterminateSystems/flakehub-cache-action@v2
+
+      - name: check flake
+        run: nix flake check --accept-flake-config
+
+  fmt:
+    name: check-format
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: DeterminateSystems/determinate-nix-action@v3
+
+      - uses: DeterminateSystems/flakehub-cache-action@v2
+
+      - name: check formatting
+        run: nix fmt -- --ci
+
+  required:
+    name: all-checks-passed
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - check
+      - build
+      - fmt
+    steps:
+      - name: verify all jobs passed
+        run: |
+          results='${{ toJSON(needs.*.result) }}'
+          if echo "$results" | grep -qE '(failure|cancelled)'; then
+            echo "required jobs failed: $results"
+            exit 1
+          fi
+          echo "all required jobs passed: $results"
