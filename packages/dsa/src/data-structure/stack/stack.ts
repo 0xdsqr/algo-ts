@@ -3,28 +3,22 @@ type Node<T> = {
   prev: Node<T> | undefined
 }
 
-interface Stack<T> {
+interface StackInstance<T> {
   push(item: T): void
   pop(): T | undefined
   peek(): T | undefined
   length: number
 }
 
-function createStack<T>(): Stack<T> {
+function createStack<T>(): StackInstance<T> {
   let length: number = 0
   let head: Node<T> | undefined
 
   return {
-    get length() {
-      return length
-    },
-
-    push(item: T): void {
-      const node: Node<T> = { value: item, prev: head }
+    push(value: T): void {
       length++
-      head = node
+      head = { value, prev: head } as Node<T>
     },
-
     pop(): T | undefined {
       if (!head) return undefined
 
@@ -35,11 +29,15 @@ function createStack<T>(): Stack<T> {
 
       return current.value
     },
-
     peek(): T | undefined {
-      return head?.value
+      if (!head) return undefined
+      return head.value
+    },
+    get length(): number {
+      return length
     },
   }
 }
 
-export { createStack, type Node, type Stack }
+export type { Node, StackInstance }
+export const Stack = { create: createStack }

@@ -3,40 +3,35 @@ type Node<T> = {
   next: Node<T> | undefined
 }
 
-interface Queue<T> {
+interface QueueInstance<T> {
   enqueue(item: T): void
-  deque(): T | undefined
+  dequeue(): T | undefined
   peek(): T | undefined
   length: number
 }
 
-function createQueue<T>(): Queue<T> {
+function createQueue<T>(): QueueInstance<T> {
   let length: number = 0
   let head: Node<T> | undefined
   let tail: Node<T> | undefined
 
   return {
-    get length() {
-      return length
-    },
-
-    enqueue(item: T): void {
-      const node: Node<T> = { value: item, next: undefined }
+    enqueue(value: T): void {
+      const node: Node<T> = { value, next: undefined }
       length++
-
       if (!tail) {
-        tail = head = node
+        head = tail = node
         return
       }
 
       tail.next = node
       tail = node
+      return
     },
-
-    deque(): T | undefined {
+    dequeue(): T | undefined {
       if (!head) return undefined
-
       length--
+
       const current = head
       head = head.next
       current.next = undefined
@@ -45,11 +40,15 @@ function createQueue<T>(): Queue<T> {
 
       return current.value
     },
-
     peek(): T | undefined {
-      return head?.value
+      if (!head) return undefined
+      return head.value
+    },
+    get length(): number {
+      return length
     },
   }
 }
 
-export { createQueue, type Node, type Queue }
+export type { Node, QueueInstance }
+export const Queue = { create: createQueue }
